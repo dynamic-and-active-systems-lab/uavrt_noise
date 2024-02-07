@@ -19,10 +19,10 @@ def moving_average(a, n=3):
 ######################################################
 # MODIFY THE FOLLOWING LINES OF CODE FOR YOUR SPECIFIC TEST
 gainLevels      = [21] #[10, 12, 14, 16, 18, 20, 21]
-folderStr       = "2024-01-31-RPI_Outdoor"
-testFileStrList = ["OutDoorMacRecAntOnLadder", "OutdoorTestRPIRecAntOnLadderWifiAway","OutdoorTestRPIRecAntOnLadderDroneOnPoweringRpi","OutdoorTestRPIRecAntOnLadderDroneWithAnt","OutdoorTestRPIRecDroneFlying"]
-colorsForTest   = ['blue','green', 'black', '#00FF00','red']
-descriptions    = ['Ant on Ladder, Mac On Ground','Ant on Ladder, RPI On Ground w/ Ext. Power ', 'Ant on Ladder, RPI On Ground w/ Drone Power ', 'Drone with Ant on Ladder', 'Drone flying']
+folderStr       = "" #sub directory where the data files live or the full path to the directory where they live
+testFileStrList = ["Testing"]#["OutDoorMacRecAntOnLadder", "OutdoorTestRPIRecAntOnLadderWifiAway","OutdoorTestRPIRecAntOnLadderDroneOnPoweringRpi","OutdoorTestRPIRecAntOnLadderDroneWithAnt","OutdoorTestRPIRecDroneFlying"]
+colorsForTest   = ["blue"] #['blue','green', 'black', '#00FF00','red']
+descriptions    = ["A simple test"]#['Ant on Ladder, Mac On Ground','Ant on Ladder, RPI On Ground w/ Ext. Power ', 'Ant on Ladder, RPI On Ground w/ Drone Power ', 'Drone with Ant on Ladder', 'Drone flying']
 ######################################################
 
 baseFileStr     = "Pxx_W_Hz_"
