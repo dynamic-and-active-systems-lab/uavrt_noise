@@ -3,8 +3,13 @@ A repo for noise assessment on our systems.
 
 To install the necessary pacakges, navigate to this repo in terminal then:
 ```
-source venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
+```
+Once installed and for subsequent runs, you need to source the virtual environment before you run the progam with:
+```
+source .venv/bin/activate
 ```
 
 To run:
