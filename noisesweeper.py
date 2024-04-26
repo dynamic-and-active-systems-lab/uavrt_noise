@@ -14,10 +14,10 @@ def noisesweeper(testDescription):
     # nr.make_airspy_test_file(150, 10, 21)#Run radio to warm up 
     # print('complete.')
 
-    fRange_MHz      = [148, 149]#[146, 152]##146.539#[146, 148]
+    fRange_MHz      = [146, 154]#[146, 152]##146.539#[146, 148]
     duration        = 1
     freqStep_MHz    = 0.375
-    gainSettings    = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 21]
+    gainSettings    = [21]#[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 21]
 
 
     nFreqSteps   = 1 + (np.max(fRange_MHz) - np.min(fRange_MHz)) / (freqStep_MHz)
