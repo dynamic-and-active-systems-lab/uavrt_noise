@@ -11,6 +11,9 @@ from shutil import which
 from scipy.signal import ShortTimeFFT
 from scipy.signal.windows import hann
 from scipy.signal.windows import boxcar
+import os
+from shutil import rmtree
+
 
 
 
@@ -48,22 +51,31 @@ def get_channel_psd(frequency_MHz = 150, duration=2, gain=21, plotLogic=False):
     return f, Pxx
 
 
-def make_airspy_test_file(frequency_MHz=150, duration=2, gain=21):
+def make_airspy_test_file(frequency_MHz=150, duration=2, gain=21, folderName=''):
+    print('make_airspy_test_file: The folderName=' + folderName)
+    #Leave foldername empty if you want it in the current directory
     Fs = 3000000
     samps = math.ceil(Fs * duration)
     airspyrxInstallLoc = which('airspy_rx')
-    airspyCommand = airspyrxInstallLoc + ' -f ' + str(frequency_MHz) + ' -a 3000000 -t 0 -h ' + str(gain) + ' -n ' + str(samps) + ' -r test.bin'
+    #fileName = str(frequency_MHz)+ '_MHz_' + str(gain) + '_gain.bin'
+    fileName =  f"{frequency_MHz:.6f}"+ '_MHz_' + str(gain) + '_gain.bin' #format string to always have 6 decimal places
+    # folderName = 'RawData'
+    fullName = os.path.join(folderName, fileName)
+    airspyCommand = airspyrxInstallLoc + ' -f ' + str(frequency_MHz) + ' -a 3000000 -t 0 -h ' + str(gain) + ' -n ' + str(samps) + ' -r ' + fullName
     p1 = subprocess.run(airspyCommand,shell=True,capture_output=True,timeout=duration+5)
-    return p1.returncode
+    return p1.returncode, fileName
 
 
-def get_airspy_raw_data(frequency_MHz = 150, duration=2, gain=21):
+def get_airspy_raw_data(frequency_MHz = 150, duration=2, gain=21, dataFolderName=''):
+    print('get_airspy_raw_data: The dataFolderName=' + dataFolderName)
     leadTime = 0.1
     Fs       = 3000000
-    if make_airspy_test_file(frequency_MHz, duration+leadTime, gain) != 0 :
+    status, fileName = make_airspy_test_file(frequency_MHz, duration+leadTime, gain, dataFolderName)
+    fullName = os.path.join(dataFolderName, fileName)
+    if status != 0 :
         raise ChildProcessError('Airspy data collection failed. ')
-    fileName    = "test.bin"
-    dataRaw     = np.fromfile(fileName, dtype=np.float32 )
+    #fileName    = "test.bin"
+    dataRaw     = np.fromfile(fullName, dtype=np.float32 )
     complexData = np.array(dataRaw[:-1:2] + 1j*dataRaw[1::2])
     nSamps2Cut  = int(np.ceil( leadTime * Fs ) )
     complexData = complexData[nSamps2Cut::]
@@ -71,8 +83,9 @@ def get_airspy_raw_data(frequency_MHz = 150, duration=2, gain=21):
     return complexData
     
 
-def get_new_airspy_psd(frequency_MHz=150, duration=2, gain=21):
-    complexData = get_airspy_raw_data(frequency_MHz, duration, gain)
+def get_new_airspy_psd(frequency_MHz=150, duration=2, gain=21, dataFolderName=''):
+    print('get_new_airspy_psd: The dataFolderName=' + dataFolderName)
+    complexData = get_airspy_raw_data(frequency_MHz, duration, gain, dataFolderName)
     FsRaw = 3000000;
     tWind = 0.02;
     nWind = math.floor(tWind * FsRaw);
@@ -99,13 +112,23 @@ def get_existing_airspy_psd(fileName, Fs):
     return f, Pxx
 
 
-def get_multiple_airspy_psd(centerFreqs_MHz = 150, duration=2, gain=21, plotLogic=False):
+def get_multiple_airspy_psd(centerFreqs_MHz = 150, duration=2, gain=21, plotLogic=False, dataFolderName=''):
     firstRun = True
+    print('get_multiple_airspy_psd: The dataFolderName=' + dataFolderName)
+    if dataFolderName:#check to see if the folder name was supplied. if not, we don't need a directory and the files will be written to the current working directory
+        try:
+            os.mkdir(dataFolderName)
+        except:
+            #Directory already exists - so clear it out
+            print('Data folder already exists. Clearing contents. ')
+            clear_directory(dataFolderName)
+    
+
     if plotLogic:
         figFFT, axFFT = plt.subplots(nrows = 1, ncols = 1, layout='constrained')
     for indx, freq in enumerate(centerFreqs_MHz): #https://stackoverflow.com/questions/522563/how-to-access-the-index-value-in-a-for-loop
         print("Collecting frequency: " + str(freq) + " MHz")
-        f, Pxx = get_new_airspy_psd(freq, duration, gain)
+        f, Pxx = get_new_airspy_psd(freq, duration, gain, dataFolderName)
         if firstRun:
             PxxArray = np.zeros((np.size(Pxx), np.size(centerFreqs_MHz)))
             firstRun = False
@@ -115,7 +138,39 @@ def get_multiple_airspy_psd(centerFreqs_MHz = 150, duration=2, gain=21, plotLogi
     return f, PxxArray
 
 
+#Written by chatGPT with query:
+#write a python function that takes a directory as an input string and then deletes the contents of that directory
+def clear_directory(directory_path):
+    """
+    Deletes all the contents of the given directory.
 
+    Args:
+    directory_path (str): Path to the directory to clear.
+    """
+    if not os.path.exists(directory_path):
+        print(f"Directory '{directory_path}' does not exist.")
+        return
+
+    if not os.path.isdir(directory_path):
+        print(f"'{directory_path}' is not a directory.")
+        return
+
+    # Iterate through all the files and folders in the directory
+    for item_name in os.listdir(directory_path):
+        item_path = os.path.join(directory_path, item_name)
+
+        try:
+            # If the item is a file, remove it
+            if os.path.isfile(item_path) or os.path.islink(item_path):
+                os.unlink(item_path)
+            # If the item is a directory, remove it and all its contents
+            elif os.path.isdir(item_path):
+                rmtree(item_path)
+        except Exception as e:
+            print(f"Failed to delete {item_path}. Reason: {e}")
+
+# Example usage
+# clear_directory("/path/to/your/directory")
 
 
 ################################################

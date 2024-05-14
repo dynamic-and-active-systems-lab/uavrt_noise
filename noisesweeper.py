@@ -3,7 +3,7 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 from scipy.fft import fftshift
-
+from os import path
 import sys
 
 
@@ -15,9 +15,9 @@ def noisesweeper(testDescription):
     # print('complete.')
 
     fRange_MHz      = [146, 154]#[146, 152]##146.539#[146, 148]
-    duration        = 1
+    duration        = 2
     freqStep_MHz    = 0.375
-    gainSettings    = [21]#[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 21]
+    gainSettings    = [21]
 
 
     nFreqSteps   = 1 + (np.max(fRange_MHz) - np.min(fRange_MHz)) / (freqStep_MHz)
@@ -28,14 +28,16 @@ def noisesweeper(testDescription):
 
     for gain in gainSettings:
         print('Recording gain setting: ' + str(gain))
-        f, PxxArray = nr.get_multiple_airspy_psd(centerFreqs, duration, gain)
+        folderName = 'Data-' + testDescription
+        print('The folder name is: '+ folderName)
+        f, PxxArray = nr.get_multiple_airspy_psd(centerFreqs, duration, gain, False, folderName)
         fArrayCenters, fArrayDiffs = np.meshgrid(centerFreqs, f) 
         fArray      = np.round((fArrayCenters * 10**6 + fArrayDiffs) / 10**6, 6)
         #fArrayShift = fftshift(fArray,axes=0)
         fShift      = fftshift(f)
         fSelectMask = np.logical_and(fShift>=-freqStep_MHz/2*10**6, fShift<freqStep_MHz/2*10**6)
-        
-        np.savetxt("Pxx_W_Hz_"+ testDescription + '_Gain=' + str(gain) + ".csv",PxxArray, delimiter=",")
+        pxxFullName = path.join(folderName, "Pxx_W_Hz_"+ testDescription + '_Gain=' + str(gain) + ".csv")
+        np.savetxt(pxxFullName, PxxArray, delimiter=",")
 
         PxxArray    = fftshift(PxxArray,axes=0)
 
@@ -43,7 +45,8 @@ def noisesweeper(testDescription):
             #axFFT.plot(fftshift(f + centerFreqs[indx]*10**6), fftshift(10*np.log10(PxxArray[:,indx])))
             axFFTMulti.plot(fShift[fSelectMask] + centerFreqs[indx]*10**6, (10*np.log10(PxxArray[fSelectMask,indx])))
     
-    np.savetxt("F_MHz_"+ testDescription +".csv",fArray, delimiter=",",fmt='%3.6f')
+    fFullName = path.join(folderName, "F_MHz_"+ testDescription +".csv")
+    np.savetxt(fFullName, fArray, delimiter=",",fmt='%3.6f')
 
     plt.show()    
 
