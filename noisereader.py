@@ -52,7 +52,6 @@ def get_channel_psd(frequency_MHz = 150, duration=2, gain=21, plotLogic=False):
 
 
 def make_airspy_test_file(frequency_MHz=150, duration=2, gain=21, folderName=''):
-    print('make_airspy_test_file: The folderName=' + folderName)
     #Leave foldername empty if you want it in the current directory
     Fs = 3000000
     samps = math.ceil(Fs * duration)
@@ -67,7 +66,6 @@ def make_airspy_test_file(frequency_MHz=150, duration=2, gain=21, folderName='')
 
 
 def get_airspy_raw_data(frequency_MHz = 150, duration=2, gain=21, dataFolderName=''):
-    print('get_airspy_raw_data: The dataFolderName=' + dataFolderName)
     leadTime = 0.1
     Fs       = 3000000
     status, fileName = make_airspy_test_file(frequency_MHz, duration+leadTime, gain, dataFolderName)
@@ -84,7 +82,6 @@ def get_airspy_raw_data(frequency_MHz = 150, duration=2, gain=21, dataFolderName
     
 
 def get_new_airspy_psd(frequency_MHz=150, duration=2, gain=21, dataFolderName=''):
-    print('get_new_airspy_psd: The dataFolderName=' + dataFolderName)
     complexData = get_airspy_raw_data(frequency_MHz, duration, gain, dataFolderName)
     FsRaw = 3000000;
     tWind = 0.02;
@@ -114,7 +111,6 @@ def get_existing_airspy_psd(fileName, Fs):
 
 def get_multiple_airspy_psd(centerFreqs_MHz = 150, duration=2, gain=21, plotLogic=False, dataFolderName=''):
     firstRun = True
-    print('get_multiple_airspy_psd: The dataFolderName=' + dataFolderName)
     if dataFolderName:#check to see if the folder name was supplied. if not, we don't need a directory and the files will be written to the current working directory
         try:
             os.mkdir(dataFolderName)
